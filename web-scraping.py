@@ -7,32 +7,42 @@ import pandas as pd
 # Assigning variables to HTML pages to ebing webscraping 
 
 response1 = requests.get("https://www.npd.com/news/entertainment-top-10/2022/top-10-books/")
-print(response1.text)
+# print(response1.text)
 
-response2 = requests.get("https://editorial.rottentomatoes.com/guide/best-movies-2022/")
-print(response2.text)
+response2 = requests.get("https://www.the-numbers.com/market/2022/top-grossing-movies")
+# print(response2.text)
 
-# Creating BeautifulSoup object for both websites
+# Creating BeautifulSoup object for first website
 npd_books = BeautifulSoup(response1.text, 'html.parser')
-print(npd_books.prettify())
-
-#rottentomatoes_movies = BeautifulSoup(response2.text, 'html.parser')
-#print(rottentomatoes_movies.prettify())
-
-# Extracting the top 10 books from response1 
-top10books = npd_books.find('table',class_='a-min-width-table__inner')
-print(top10books)
-df = pd.read_html(str(top10books)) [0]
 
 table = npd_books.table
 table_rows = table.find_all('tr')
-
-data = {}
+rows = []
+table_headers = [header.text for header in table.find_all('th')]
 for tr in table_rows:
     td = tr.find_all('td')
-    if len(td) != 2 : continue
-    data[td[0].text] = td[1].text.strip()
+    if td:  
+        row = []
+        for column in td:
+            row.append(column.text.strip())
+        rows.append(row)
+data_frame = pd.DataFrame(rows, columns=table_headers)
+data_frame.to_csv('output1.csv', index=False)
 
-data_frame = pd.DataFrame([data], columns=data.keys())
 
-data_frame.to_csv('output.csv', index=False)
+# Creating BeautifulSoup object for second website
+topgrossing_movies = BeautifulSoup(response2.text, 'html.parser')
+print(topgrossing_movies)
+#table2 = topgrossing_movies.table
+#table_rows = table2.find_all('tr')
+#rows = []
+#table_headers = [header.text for header in table2.find_all('th')]
+#for tr in table_rows:
+    #td = tr.find_all('td')
+    #if td:  
+        #row = []
+        #for column in td:
+            #row.append(column.text.strip())
+        #rows.append(row)
+#data_frame = pd.DataFrame(rows, columns=table_headers)
+#data_frame.to_csv('output2.csv', index=False)
